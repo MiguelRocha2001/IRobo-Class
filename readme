@@ -1,0 +1,8 @@
+# Run Gmapping:
+- $ roslaunch robo turtlebot3_slam.launch slam_methods:=gmapping
+
+# Run Localization package:
+- $ roslaunch robo turtlebot3_localization.launch
+
+# Run AMCL package:
+- $ roslaunch robo turtlebot3_navigation.launch
