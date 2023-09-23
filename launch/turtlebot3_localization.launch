@@ -7,13 +7,13 @@
   <arg name="bag_name" default="lab/2023-09-18-10-18-29"/>
   <arg name="tf2_base_scan2base_link" default="0 0 0 0 0 0 base_link base_scan"/>
 
-  <!-- Map server -->
-  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
-
   <!-- ROSBAG -->
   <param name="/use_sim_time" value="true"/>
   <node pkg="rosbag" type="play" name="rosbag_player" 
           args="--clock $(find robo)/bags/$(arg bag_name).bag"/>
+
+  <!-- Map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
 
   <!-- ekf_localization_node -->
   <node pkg="robot_localization" type="ekf_localization_node" name="robot_localization_ekf_node_odom" clear_params="true">
@@ -41,8 +41,8 @@
        false, false, true,
        false, false, false]</rosparam>
     <rosparam param="initial_state">
-      [-2.0,-0.5,  0.0,
-       0.0,  0.0,  0.0,
+      [ 0.0, 0.0,  0.0,
+       0.0,  0.0,  20.0,
        0.0,  0.0,  0.0,
        0.0,  0.0,  0.0,
        0.0,  0.0,  0.0]</rosparam>
