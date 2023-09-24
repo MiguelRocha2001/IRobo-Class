@@ -4,8 +4,9 @@
   <arg name="map_file" default="$(find robo)/maps/lab/lab_map.yaml"/>
   <arg name="move_forward_only" default="false"/>
   <arg name="tf2_map2odom" default="0 0 0 0 0 0 map odom"/>
-  <arg name="bag_name" default="lab/2023-09-18-10-18-29"/>
   <arg name="tf2_base_scan2base_link" default="0 0 0 0 0 0 base_link base_scan"/>
+  <arg name="tf2_base_link2imu_link" default="0 0 0 0 0 0 base_link imu_link"/>
+  <arg name="bag_name" default="lab/2023-09-18-10-18-29"/>
 
   <!-- ROSBAG -->
   <param name="/use_sim_time" value="true"/>
@@ -14,6 +15,14 @@
 
   <!-- Map server -->
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+    <!-- TF -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_map2odom" required="true"
+       args="$(arg tf2_map2odom)"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_base_scan2base_link" required="true"
+       args="$(arg tf2_base_scan2base_link)"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_base_link2imu_link" required="true"
+       args="$(arg tf2_base_link2imu_link)"/>
 
   <!-- ekf_localization_node -->
   <node pkg="robot_localization" type="ekf_localization_node" name="robot_localization_ekf_node_odom" clear_params="true">
@@ -32,7 +41,8 @@
        true, true, false,
        false, false, true,
        false, false, false]</rosparam>
-    <param name="odom0_differential" value="true"/>
+    <param name="odom0_differential" value="false"/>
+    <param name="imu0_differential" value="true"/>
     <param name="imu0" value="imu" />
     <rosparam param="imu0_config">
       [false, false, false,
@@ -46,16 +56,72 @@
        0.0,  0.0,  0.0,
        0.0,  0.0,  0.0,
        0.0,  0.0,  0.0]</rosparam>
+    
+    <!-- The process noise covariance matrix can be difficult to tune, and can vary for each application, so it
+    is exposed as a configuration parameter. The values are ordered as x, y, z, roll, pitch, yaw, vx, vy, vz,
+    vroll, vpitch, vyaw, ax, ay, az. -->
+    <rosparam param="process_noise_covariance">[30, 0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0,
+
+                                                0, 30, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+
+                                                0, 0, 0.06, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+
+                                                0, 0, 0, 0.03, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+
+                                                0, 0, 0, 0, 0.03, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+
+                                                0, 0, 0, 0, 0, 0.06, 0, 0, 0,  0, 0, 0, 0, 0, 0,
+
+                                                0, 0, 0, 0, 0, 0, 0.025,0, 0,  0, 0, 0, 0, 0, 0,
+
+                                                0, 0, 0, 0, 0, 0, 0, 0.025,0,  0, 0, 0, 0, 0, 0,
+
+                                                0, 0, 0, 0, 0, 0, 0, 0, 0.04, 0,    0, 0, 0, 0, 0,
+
+                                                0, 0, 0, 0, 0, 0, 0, 0, 0,  0.01, 0, 0, 0, 0, 0,
+
+                                                0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0.01, 0, 0, 0, 0,
+
+                                                0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0.02, 0, 0, 0,
+
+                                                0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0.01, 0, 0,
+
+                                                0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0.01, 0,
+
+                                                0, 0, 0, 0, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0.005]</rosparam>
+    <rosparam param="initial_estimate_covariance">[1e-9, 0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0,
+
+                                                      0, 1e-9, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0, 0, 0,
+
+                                                      0, 0, 1e-9, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0, 0, 0,
+
+                                                      0, 0, 0, 1e-9, 0, 0, 0, 0, 0, 0,    0, 0, 0, 0, 0,
+
+                                                      0, 0, 0, 0, 1e-9, 0, 0, 0, 0, 0,    0, 0, 0, 0, 0,
+
+                                                      0, 0, 0, 0, 0, 1e-9, 0, 0, 0, 0,    0, 0, 0, 0, 0,
+
+                                                      0, 0, 0, 0, 0, 0, 1 , 0, 0, 0,    0, 0, 0, 0, 0,
+
+                                                      0, 0, 0, 0, 0, 0, 0, 1 , 0, 0,    0, 0, 0, 0, 0,
+
+                                                      0, 0, 0, 0, 0, 0, 0, 0, 1e-9, 0,    0, 0, 0, 0, 0,
+
+                                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 1,    0, 0, 0, 0, 0,
+
+                                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    1, 0, 0, 0, 0,
+
+                                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 1 , 0, 0, 0,
+
+                                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 1, 0, 0,
+
+                                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0, 1e-9, 0,
+
+                                                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,    0, 0, 0, 0, 1e-9]</rosparam>
   </node>
 
   <!-- rviz -->
   <node pkg="rviz" type="rviz" name="rviz" required="true"
     args="-d $(find turtlebot3_datasets)/rviz/turtle_sim_ekf.rviz"/>
-	
-  <!-- tf2 -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_map2odom" required="true"
-       args="$(arg tf2_map2odom)"/>
-  <node pkg="tf2_ros" type="static_transform_publisher" name="tf2_base_scan2base_link" required="true"
-       args="$(arg tf2_base_scan2base_link)"/>
 
 </launch>
