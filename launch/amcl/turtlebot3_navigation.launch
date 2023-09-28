@@ -5,6 +5,7 @@
   <arg name="open_rviz" default="true"/>
   <arg name="move_forward_only" default="false"/>
   <arg name="bag_name" default="lab/2023-09-18-10-18-29"/>
+  <arg name="rate" default="1"/>
 
   <!-- Turtlebot3 -->
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
@@ -15,10 +16,10 @@
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
 
   <!-- AMCL -->
-  <include file="$(find turtlebot3_navigation)/launch/amcl.launch"/>
+  <include file="$(find robo)/launch/amcl/amcl.launch"/>
 
   <!-- move_base -->
-  <include file="$(find turtlebot3_navigation)/launch/move_base.launch">
+  <include file="$(find robo)/launch/amcl/move_base.launch">
     <arg name="model" value="$(arg model)" />
     <arg name="move_forward_only" value="$(arg move_forward_only)"/>
   </include>
@@ -26,7 +27,7 @@
   <!-- ROSBAG -->
   <param name="/use_sim_time" value="true"/>
   <node pkg="rosbag" type="play" name="rosbag_player" 
-          args="--clock $(find robo)/bags/$(arg bag_name).bag"/>
+          args="--clock $(find robo)/bags/$(arg bag_name).bag --rate $(arg rate)"/>
 
   <!-- rviz -->
   <group if="$(arg open_rviz)"> 
