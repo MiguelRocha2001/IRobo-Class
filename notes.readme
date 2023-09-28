@@ -7,8 +7,8 @@ In turtlebot3_localization.launch, we have to change the following parameters:
     - the laser rotates uncontrollably
 
 - odom0_differential = true
-    - the uncertanty elipse gets bigger.
+    - the uncertanty elipse gets bigger and the laser is not fixed to the map
 - odom0_differential = false
-    - the uncertanty elipse gets smaller.
+    - the uncertanty elipse gets smaller and the laser is fixed to the map
 
 In the process_noise_covariance, greater values in x and y, makes the uncertanty elipse bigger.

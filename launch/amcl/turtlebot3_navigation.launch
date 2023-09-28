@@ -23,10 +23,7 @@
     <arg name="move_forward_only" value="$(arg move_forward_only)"/>
   </include>
 
-  <!-- ROSBAG -->
-  <param name="/use_sim_time" value="true"/>
-  <node pkg="rosbag" type="play" name="rosbag_player" 
-          args="--clock $(find robo)/bags/$(arg bag_name).bag"/>
+  
 
   <!-- rviz -->
   <group if="$(arg open_rviz)"> 

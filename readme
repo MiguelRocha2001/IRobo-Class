@@ -11,4 +11,5 @@
 - $ roslaunch robo turtlebot3_localization.launch bag_name:=dataset/fixed_slam_easy map_file:=/home/miguel/catkin_ws/src/robo/maps/dataset/final.yaml
 
 # Run AMCL package:
+- $ roslaunch robo turtlebot3_navigation.launch
 - $ roslaunch robo turtlebot3_navigation.launch bag_name:=dataset/fixed_slam_easy map_file:=/home/miguel/catkin_ws/src/robo/maps/dataset/final.yaml

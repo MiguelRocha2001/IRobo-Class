@@ -74,11 +74,13 @@ try:
             t = handler.get_transform(gt_frame, est_frame)
         except Exception as e:
             rospy.logwarn(e)
+            continue
         else:
             eucl = get_errors(t)
             rospy.loginfo('Error (in mm): {:.2f}'.format(eucl * 1e3))
-            avrg += eucl            
+            avrg += eucl       
             reading += 1
+            print('Average error (in mm): {:.2f}'.format(avrg/reading * 1e3))
 
         try:
             sleeper.sleep()
