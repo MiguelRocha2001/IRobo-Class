@@ -1,15 +1,30 @@
+######################################## TF PACKAGE ###################################################
+
 # Run a static transform publisher to connect the ground-truth and robot frames (you can also add as a node to turtlebot3_playbag.launch)
 - $ rosrun robo publish_initial_tf.sh odom # dont use this!
 - $ rosrun robo publish_initial_tf.sh map # use this!
+
+######################################## GAMAPPING PACKAGE ###################################################
 
 # Run Gmapping:
 - $ roslaunch robo turtlebot3_slam.launch slam_methods:=gmapping
 - $ roslaunch robo turtlebot3_slam.launch slam_methods:=gmapping bag_name:=dataset/fixed_slam_easy
 
+# Generate a map from a bag file:
+- $ rosrun map_server map_saver -f my_map
+
+# Use this website to convert .pgm to .yaml:
+https://pro-convert.com/pgm-to-yaml/
+
+######################################## LOCALIZATION PACKAGE ###################################################
+
 # Run Localization package:
 - $ roslaunch robo turtlebot3_localization.launch
 - $ roslaunch robo turtlebot3_localization.launch bag_name:=dataset/fixed_slam_easy map_file:=/home/miguel/catkin_ws/src/robo/maps/dataset/final.yaml
 
+######################################## AMCL PACKAGE ###################################################
+
 # Run AMCL package:
 - $ roslaunch robo turtlebot3_navigation.launch
 - $ roslaunch robo turtlebot3_navigation.launch bag_name:=dataset/fixed_slam_easy map_file:=/home/miguel/catkin_ws/src/robo/maps/dataset/final.yaml
+- $ roslaunch robo turtlebot3_navigation.launch bag_name:=lab/2023-09-25-12-42-03 map_file:=/home/miguel/catkin_ws/src/robo/maps/lab/2023-09-25-12-42-03.yaml
