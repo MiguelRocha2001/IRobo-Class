@@ -27,6 +27,7 @@
 # Run Localization package:
 - $ roslaunch robo turtlebot3_localization.launch
 - $ roslaunch robo turtlebot3_localization.launch bag_name:=dataset/fixed_slam_easy map_file:=/home/miguel/catkin_ws/src/robo/maps/dataset/final.yaml
+- $ roslaunch robo turtlebot3_localization.launch bag_name:=dataset/fixed_slam_easy map_file:=/home/miguel/catkin_ws/src/robo/maps/dataset/final.yaml odom0_differential:=true
 
 ######################################## AMCL PACKAGE ###################################################
 
