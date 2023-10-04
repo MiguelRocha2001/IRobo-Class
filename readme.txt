@@ -32,7 +32,12 @@
 ######################################## AMCL PACKAGE ###################################################
 
 # Run AMCL package:
+    # see: https://www.mathworks.com/help/nav/ug/monte-carlo-localization-algorithm.html (meter na bibliografia do report)
+
 - $ roslaunch robo turtlebot3_navigation.launch
 - $ roslaunch robo turtlebot3_navigation.launch bag_name:=dataset/fixed_slam_easy map_file:=/home/miguel/catkin_ws/src/robo/maps/dataset/final.yaml rate:=1
 - $ roslaunch robo turtlebot3_navigation.launch bag_name:=lab/2023-09-18-10-18-29 map_file:=/home/miguel/catkin_ws/src/robo/maps/lab/2023-09-18-10-18-29.yaml rate:=1
 - $ roslaunch robo turtlebot3_navigation.launch bag_name:=lab/2023-09-25-12-42-03 map_file:=/home/miguel/catkin_ws/src/robo/maps/lab/2023-09-25-12-42-03.yaml rate:=1
+
+# Use global localization to spread the particles uniformly:
+    - $ rosservice call /global_localization
