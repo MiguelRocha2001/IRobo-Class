@@ -3,6 +3,7 @@
 # Run a static transform publisher to connect the ground-truth and robot frames (you can also add as a node to turtlebot3_playbag.launch)
 - $ rosrun robo publish_initial_tf.sh odom # dont use this!
 - $ rosrun robo publish_initial_tf.sh map # use this!
+- $ rosrun robo publish_initial_tf.sh /odometry/filtered # use this!
 
 ######################################## ROSBAG ###################################################
 

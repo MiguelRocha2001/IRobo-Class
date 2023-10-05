@@ -45,7 +45,7 @@ def get_errors(transform):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gt_frame', help='The child frame of the GT transform', default='mocap_laser_link')
-parser.add_argument('--est_frame', help='The child frame of the estimation transform', default='base_scan')
+parser.add_argument('--est_frame', help='The child frame of the estimation transform', default='odometry/filtered')
 
 args = parser.parse_args()
 

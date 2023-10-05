@@ -18,13 +18,28 @@ class CombinedPathAccumulator:
 
         # Publishers for the accumulated paths
         self.path_pub_mocap_laser = rospy.Publisher('/mocap_laser_path_in_mocap', nav_msgs.msg.Path, queue_size=10)
-        self.path_pub_base_scan = rospy.Publisher('/base_scan_path_in_map', nav_msgs.msg.Path, queue_size=10)
-
+        self.path_pub_odom = rospy.Publisher('/odom_path', nav_msgs.msg.Path, queue_size=10)  # Added publisher
+        
         # Path messages to store accumulated paths
         self.path_mocap_laser = nav_msgs.msg.Path()
         self.path_mocap_laser.header.frame_id = "mocap"
-        self.path_base_scan = nav_msgs.msg.Path()
-        self.path_base_scan.header.frame_id = "map"
+
+        # Subscriber for odometry data
+        self.odom_sub = rospy.Subscriber('/odometry/filtered', nav_msgs.msg.Odometry, self.odom_callback)
+
+        # Path message to store path from odometry data
+        self.path_odom = nav_msgs.msg.Path()
+        self.path_odom.header.frame_id = "odom"
+
+    def odom_callback(self, msg):
+        # Get the pose from the Odometry message and append it to the path
+        pose_stamped = geometry_msgs.msg.PoseStamped()
+        pose_stamped.header = msg.header  # using the header from the Odometry message to keep the timestamp and frame_id
+        pose_stamped.pose = msg.pose.pose  # using the pose from the Odometry message
+        self.path_odom.poses.append(pose_stamped)
+
+        # Publish the path
+        self.path_pub_odom.publish(self.path_odom)
 
     def accumulate_paths(self):
         rate = rospy.Rate(10)  # 10Hz
@@ -39,17 +54,7 @@ class CombinedPathAccumulator:
                 pose_mocap_laser.pose.orientation = trans_mocap_to_laser.transform.rotation
                 self.path_mocap_laser.poses.append(pose_mocap_laser)
                 self.path_pub_mocap_laser.publish(self.path_mocap_laser)
-
-                # Dynamic transform from map to base_link and static transform from base_link to base_scan
-                trans_map_to_base_link = self.tf_buffer.lookup_transform('map', 'base_link', rospy.Time(0))
-                trans_base_link_to_base_scan = self.tf_buffer.lookup_transform('base_link', 'base_scan', rospy.Time(0), rospy.Duration(1.0))
-                pose_base_scan_in_map = tf2_geometry_msgs.do_transform_pose(geometry_msgs.msg.PoseStamped(
-                    header=std_msgs.msg.Header(stamp=rospy.Time.now(), frame_id="base_link"),
-                    pose=geometry_msgs.msg.Pose(position=trans_base_link_to_base_scan.transform.translation)
-                ), trans_map_to_base_link)
-                self.path_base_scan.poses.append(pose_base_scan_in_map)
-                self.path_pub_base_scan.publish(self.path_base_scan)
-
+                
             except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
                 pass
 
@@ -58,6 +63,3 @@ class CombinedPathAccumulator:
 if __name__ == '__main__':
     pa = CombinedPathAccumulator()
     pa.accumulate_paths()
-
-
-
