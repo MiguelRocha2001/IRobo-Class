@@ -1,0 +1,14 @@
+In turtlebot3_localization.launch, we have to change the following parameters:
+- imu0_differential
+    - For each of the sensor messages defined above that contain pose information, users can specify whether the pose variables should be integrated differentially. If a given value is set to true, then for a measurement at time t from the sensor in question, we first subtract the measurement at time t−1, and convert the resulting value to a velocity. This setting is especially useful if your robot has two sources of absolute pose information, e.g., yaw measurements from odometry and an IMU. In that case, if the variances on the input sources are not configured correctly, these measurements may get out of sync with one another and cause oscillations in the filter, but by integrating one or both of them differentially, we avoid this scenario. (EXPLICAR MELHOR ISTO)
+- imu0_differential = true
+    - the laser stays fixed to the map
+- imu0_differential = false
+    - the laser rotates uncontrollably
+
+- odom0_differential = true
+    - the uncertanty elipse gets bigger and the laser is not fixed to the map
+- odom0_differential = false
+    - the uncertanty elipse gets smaller and the laser is fixed to the map
+
+In the process_noise_covariance, greater values in x and y, makes the uncertanty elipse bigger.
