@@ -1,0 +1,2 @@
+Go to base folder and run:
+$ catkin_make & rosrun simple_navigation_goals simple_navigation_goals

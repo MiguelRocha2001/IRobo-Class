@@ -44,7 +44,12 @@
 # Use global localization to spread the particles uniformly:
     - $ rosservice call /global_localization
 
-######################################## GAZEBO ###################################################
-$ roslaunch turtlebot3_gazebo turtlebot3_world.launch
-$ roslaunch robo turtlebot3_navigation.launch map_file:=/opt/ros/noetic/share/turtlebot3_navigation/maps/map.yaml play_rosbag:=false
+######################################## MOVE_BASE ###################################################
+See:
+- http://wiki.ros.org/amcl
+- http://wiki.ros.org/costmap_2d
+
+$ roslaunch turtlebot3_gazebo turtlebot3_world.launch x_pos:=-2.0 y_pos:=0.0
+$ roslaunch robo turtlebot3_navigation.launch map_file:=/opt/ros/noetic/share/turtlebot3_navigation/maps/map.yaml play_rosbag:=false amcl_initial_pose_x:=-2.0 amcl_initial_pose_y:=0.0
+
 $ roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch

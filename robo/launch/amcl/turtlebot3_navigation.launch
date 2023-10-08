@@ -7,6 +7,9 @@
   <arg name="bag_name" default="lab/2023-09-18-10-18-29"/>
   <arg name="rate" default="1"/>
   <arg name="play_rosbag" default="true"/>
+  <arg name="amcl_initial_pose_x" default="0.0"/>
+  <arg name="amcl_initial_pose_y" default="0.0"/>
+  <arg name="amcl_initial_pose_a" default="0.0"/>
 
   <!-- Turtlebot3 -->
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
@@ -24,7 +27,11 @@
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
 
   <!-- AMCL -->
-  <include file="$(find robo)/launch/amcl/amcl.launch"/>
+  <include file="$(find robo)/launch/amcl/amcl.launch">
+    <arg name="initial_pose_x" value="$(arg amcl_initial_pose_x)"/>
+    <arg name="initial_pose_y" value="$(arg amcl_initial_pose_y)"/>
+    <arg name="initial_pose_a" value="$(arg amcl_initial_pose_a)"/>
+  </include>
 
   <!-- move_base -->
   <include file="$(find robo)/launch/amcl/move_base.launch">
