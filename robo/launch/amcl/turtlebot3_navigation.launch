@@ -10,6 +10,7 @@
   <arg name="amcl_initial_pose_x" default="0.0"/>
   <arg name="amcl_initial_pose_y" default="0.0"/>
   <arg name="amcl_initial_pose_a" default="0.0"/>
+  <arg name="use_rrt_planner" default="false"/>
 
   <!-- Turtlebot3 -->
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
@@ -18,7 +19,7 @@
 
     <!-- ROSBAG -->
   <group if="$(arg play_rosbag)">
-    <param name="/use_sim_time" value="true"/>
+    <param name="/use_sim_time" value="trues"/>
     <node pkg="rosbag" type="play" name="rosbag_player" 
       args="--clock $(find robo)/bags/$(arg bag_name).bag"/>
   </group>
@@ -37,6 +38,7 @@
   <include file="$(find robo)/launch/amcl/move_base.launch">
     <arg name="model" value="$(arg model)" />
     <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+    <arg name="use_rrt_planner" value="$(arg use_rrt_planner)"/>
   </include>  
 
   <!-- rviz -->

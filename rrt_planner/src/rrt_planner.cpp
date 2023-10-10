@@ -51,6 +51,7 @@ namespace rrt_planner {
         return false;
     }
 
+    // TO BE IMPLEMENTED
     int RRTPlanner::getNearestNodeId(const double *point) {
         /*
         for (int i = 0; i < nodes_.size; i++) {
@@ -59,6 +60,7 @@ namespace rrt_planner {
         */
     }
 
+    // TO BE IMPLEMENTED    
     void RRTPlanner::createNewNode(const double* pos, int parent_node_id) {
 
         Node new_node;
@@ -70,22 +72,24 @@ namespace rrt_planner {
         nodes_.emplace_back(new_node);
     }
 
+    // TO BE IMPLEMENTED
     double* RRTPlanner::sampleRandomPoint() {
+
+        candidate_point_[0] = random_double_x.generate();
+        candidate_point_[1] = random_double_y.generate();
+
+        return rand_point_;
+    }
+
+    // TO BE IMPLEMENTED
+    double* RRTPlanner::extendTree(const double* point_nearest, const double* point_rand) {
 
         /**************************
          * Implement your code here
          **************************/
 
-        //rand_point_[0] = // ... ;
-        //rand_point_[1] = // ... ;
-
-        return rand_point_;
-    }
-
-    double* RRTPlanner::extendTree(const double* point_nearest, const double* point_rand) {
-
-        candidate_point_[0] = random_double_x.generate();
-        candidate_point_[1] = random_double_y.generate();
+        candidate_point_[0] = // ... ;
+        candidate_point_[1] = // ... ;
 
         return candidate_point_;
     }
