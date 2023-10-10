@@ -76,9 +76,38 @@ namespace rrt_planner {
         return false;
       }
 
+      // ---------------------- To Get The Costmap Configs -----------------------
+      
+      // Get the size of the costmap in cells (width and height)
+      unsigned int costmapWidth = costmap_->getSizeInCellsX();
+      unsigned int costmapHeight = costmap_->getSizeInCellsY();
+
+      // Get the resolution of the costmap (meters per cell)
+      double costmapResolution = costmap_->getResolution();
+
+      // Get the origin of the costmap (world coordinates of the cell (0,0))
+      double costmapOriginX = costmap_->getOriginX();
+      double costmapOriginY = costmap_->getOriginY();
+
+      // Calculate the world coordinates of the boundaries
+      double costmapMinX = costmapOriginX;
+      double costmapMaxX = costmapOriginX + costmapWidth * costmapResolution;
+      double costmapMinY = costmapOriginY;
+      double costmapMaxY = costmapOriginY + costmapHeight * costmapResolution;
+
+      // Print or log the boundaries
+      ROS_INFO("Costmap Bounds: MinX=%.2lf, MaxX=%.2lf, MinY=%.2lf, MaxY=%.2lf",
+         costmapMinX, costmapMaxX, costmapMinY, costmapMaxY);
+
+      // ---------------------- To Get The Costmap Configs -----------------------
+
+
       double world_start[2];
       world_start[0] = start.pose.position.x;
       world_start[1] = start.pose.position.y;
+
+      ROS_WARN_THROTTLE(1.0, "world_start[0]: %f", world_start[0]);
+      ROS_WARN_THROTTLE(1.0, "world_start[1]: %f", world_start[1]);
 
       unsigned int map_x, map_y;
       if(!costmap_->worldToMap(world_start[0], world_start[1], map_x, map_y)) {
@@ -90,6 +119,9 @@ namespace rrt_planner {
       double world_goal[2];
       world_goal[0] = goal.pose.position.x;
       world_goal[1] = goal.pose.position.y;
+
+      //ROS_WARN_THROTTLE(1.0, "world_goal[0]: %f", world_goal[0]);
+      //ROS_WARN_THROTTLE(1.0, "world_goal[1]: %f", world_goal[1]);
 
       if(!costmap_->worldToMap(world_goal[0], world_goal[1], map_x, map_y)) {
 

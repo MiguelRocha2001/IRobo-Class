@@ -51,16 +51,20 @@ namespace rrt_planner {
         return false;
     }
 
-    // TO BE IMPLEMENTED
+    // IMPLEMENTED THIS
     int RRTPlanner::getNearestNodeId(const double *point) {
-        /*
-        for (int i = 0; i < nodes_.size; i++) {
-            
+        double shortestDistance = -1;
+        int nearestPoint = -1;
+        for (int i = 0; i < nodes_.size(); i++) {
+            double distance = computeDistance(nodes_[i].pos, point);
+            if (distance < shortestDistance) {
+                nearestPoint = nodes_[i].node_id;
+            }
         }
-        */
+        return nearestPoint;
     }
 
-    // TO BE IMPLEMENTED    
+    // IMPLEMENTED THIS
     void RRTPlanner::createNewNode(const double* pos, int parent_node_id) {
 
         Node new_node;
@@ -72,24 +76,28 @@ namespace rrt_planner {
         nodes_.emplace_back(new_node);
     }
 
-    // TO BE IMPLEMENTED
+    // IMPLEMENTED THIS
     double* RRTPlanner::sampleRandomPoint() {
-
-        candidate_point_[0] = random_double_x.generate();
-        candidate_point_[1] = random_double_y.generate();
+        do {
+            rand_point_[0] = random_double_x.generate();
+            rand_point_[1] = random_double_y.generate();
+        } while(collision_dect_.inFreeSpace(rand_point_));
 
         return rand_point_;
     }
 
-    // TO BE IMPLEMENTED
+    // IMPLEMENTED THIS
     double* RRTPlanner::extendTree(const double* point_nearest, const double* point_rand) {
+        double x = point_rand[0] - point_nearest[0];
+        double y = point_rand[1] - point_nearest[1];
 
-        /**************************
-         * Implement your code here
-         **************************/
+        double dist = computeDistance(point_nearest, point_rand);
+        
+        double normalized_vector_x = x / dist;
+        double normalized_vector_y = y / dist;
 
-        candidate_point_[0] = // ... ;
-        candidate_point_[1] = // ... ;
+        candidate_point_[0] = point_nearest[0] + normalized_vector_x * params_.step;
+        candidate_point_[1] = point_nearest[1] + normalized_vector_y * params_.step;
 
         return candidate_point_;
     }
