@@ -1,9 +1,9 @@
 RRTPlannerROS: {
-  goal_tolerance: 0.80,
+  goal_tolerance: 0.30,
 
   rrt: {
-    step: 0.20,
+    step: 0.10,
     min_num_nodes: 200,
-    max_num_nodes: 5000,
+    max_num_nodes: 100000,
   }
 }

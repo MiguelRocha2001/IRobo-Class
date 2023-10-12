@@ -135,10 +135,11 @@ namespace rrt_planner {
       planner_->setStart(world_start);
       planner_->setGoal(world_goal);
 
-      //ROS_INFO("SDJBHDSBHFB");
+      /*
       ROS_INFO("costmap_2d::FREE_SPACE: %u", costmap_2d::FREE_SPACE);
       ROS_INFO("costmap_2d::LETHAL_OBSTACLE: %u", costmap_2d::LETHAL_OBSTACLE);
       ROS_INFO("costmap_2d::NO_INFORMATION: %u", costmap_2d::NO_INFORMATION);
+      */
 
       if( planner_->planPath() ){
 

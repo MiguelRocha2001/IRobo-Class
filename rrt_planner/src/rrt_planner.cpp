@@ -30,17 +30,17 @@ namespace rrt_planner {
         for (unsigned int k = 1; k <= params_.max_num_nodes; k++) {
 
             p_rand = sampleRandomPoint();
-            ROS_INFO("p_rand[0], p_rand[1]: %f, %f", p_rand[0], p_rand[1]);
+            //ROS_INFO("p_rand[0], p_rand[1]: %f, %f", p_rand[0], p_rand[1]);
             nearest_node = nodes_[getNearestNodeId(p_rand)];
-            ROS_INFO("nearest_node.pos[0], nearest_node.pos[1]: %f, %f", nearest_node.pos[0], nearest_node.pos[1]);
+            //ROS_INFO("nearest_node.pos[0], nearest_node.pos[1]: %f, %f", nearest_node.pos[0], nearest_node.pos[1]);
             p_new = extendTree(nearest_node.pos, p_rand); // new point and node candidate
-            ROS_INFO("Tree extended");
+            //ROS_INFO("Tree extended");
 
             if (!collision_dect_.obstacleBetween(nearest_node.pos, p_new)) {
                 createNewNode(p_new, nearest_node.node_id);
-                ROS_INFO("New node created");
+                //ROS_INFO("New node created");
             } else {
-                ROS_INFO("Obstacle between");
+                //ROS_INFO("Obstacle between");
                 continue;
             }
 
@@ -85,14 +85,12 @@ namespace rrt_planner {
 
         Node new_node;
 
-        new_node.node_id = parent_node_id + 1;
+        new_node.node_id = parent_node_id + 1; // if node_id = -1, then node_id = 0
         new_node.pos[0] = pos[0];
         new_node.pos[1] = pos[1];
         new_node.parent_id = parent_node_id;
 
-        // TODO: what about node id???
-
-        ROS_INFO("New node created at: %f, %f", new_node.pos[0], new_node.pos[1]);
+        //ROS_INFO("New node created at: %f, %f", new_node.pos[0], new_node.pos[1]);
 
         nodes_.emplace_back(new_node);
     }
