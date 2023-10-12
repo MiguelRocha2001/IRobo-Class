@@ -106,8 +106,8 @@ namespace rrt_planner {
       world_start[0] = start.pose.position.x;
       world_start[1] = start.pose.position.y;
 
-      ROS_WARN_THROTTLE(1.0, "world_start[0]: %f", world_start[0]);
-      ROS_WARN_THROTTLE(1.0, "world_start[1]: %f", world_start[1]);
+      //ROS_WARN_THROTTLE(1.0, "world_start[0]: %f", world_start[0]);
+      //ROS_WARN_THROTTLE(1.0, "world_start[1]: %f", world_start[1]);
 
       unsigned int map_x, map_y;
       if(!costmap_->worldToMap(world_start[0], world_start[1], map_x, map_y)) {
@@ -134,6 +134,11 @@ namespace rrt_planner {
 
       planner_->setStart(world_start);
       planner_->setGoal(world_goal);
+
+      //ROS_INFO("SDJBHDSBHFB");
+      ROS_INFO("costmap_2d::FREE_SPACE: %u", costmap_2d::FREE_SPACE);
+      ROS_INFO("costmap_2d::LETHAL_OBSTACLE: %u", costmap_2d::LETHAL_OBSTACLE);
+      ROS_INFO("costmap_2d::NO_INFORMATION: %u", costmap_2d::NO_INFORMATION);
 
       if( planner_->planPath() ){
 
