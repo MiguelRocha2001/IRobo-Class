@@ -26,7 +26,7 @@ namespace rrt_planner {
         unsigned char cost = costmap_->getCost(mx, my);
 
         // If the cost is less than the threshold, it's considered free space
-        return cost >= 10;
+        return cost <= (costmap_2d::LETHAL_OBSTACLE - 20);
     }
 
     bool CollisionDetector::obstacleBetween(const double* point_a, const double* point_b) {

@@ -10,7 +10,6 @@
   <arg name="amcl_initial_pose_x" default="0.0"/>
   <arg name="amcl_initial_pose_y" default="0.0"/>
   <arg name="amcl_initial_pose_a" default="0.0"/>
-  <arg name="use_rrt_planner" default="false"/>
 
   <!-- Turtlebot3 -->
   <include file="$(find turtlebot3_bringup)/launch/turtlebot3_remote.launch">
@@ -38,12 +37,17 @@
   <include file="$(find robo)/launch/amcl/move_base.launch">
     <arg name="model" value="$(arg model)" />
     <arg name="move_forward_only" value="$(arg move_forward_only)"/>
-    <arg name="use_rrt_planner" value="$(arg use_rrt_planner)"/>
   </include>  
 
+
   <!-- rviz -->
+  <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find rrt_planner)/rviz/rrt_turtlebot_sim.rviz"/>
+
+  <!-- rviz -->
+  <!--
   <group if="$(arg open_rviz)"> 
     <node pkg="rviz" type="rviz" name="rviz" required="true"
           args="-d $(find robo)/rviz/turtlebot3_navigation.rviz"/>
   </group>
+  -->
 </launch>
