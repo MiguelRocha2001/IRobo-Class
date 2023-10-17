@@ -7,8 +7,13 @@ namespace rrt_planner {
             const rrt_params& params) : params_(params), collision_dect_(costmap) {
 
         costmap_ = costmap->getCostmap();
-        map_width_  = costmap_->getSizeInMetersX();
-        map_height_ = costmap_->getSizeInMetersY();
+        //map_width_  = costmap_->getSizeInMetersX();
+        //map_height_ = costmap_->getSizeInMetersY();
+        map_width_  = 3;
+        map_height_ = 3;
+
+        //ROS_INFO("map_width_: %f", map_width_);
+        //ROS_INFO("map_height_: %f", map_height_);
 
         random_double_x.setRange(-map_width_, map_width_);
         random_double_y.setRange(-map_height_, map_height_);
@@ -23,6 +28,12 @@ namespace rrt_planner {
 
         // Start Node
         createNewNode(start_, -1);
+        best_node_id_ = 0;
+        best_cost_ = computeDistance(start_, goal_);
+
+        //ROS_WARN("start pos: %f, %f", start_[0], start_[1]);
+        //ROS_WARN("goal pos: %f, %f", goal_[0], goal_[1]);
+        //ROS_WARN("best_cost_: %f", best_cost_);
 
         double *p_rand, *p_new;
         Node nearest_node;
@@ -42,6 +53,17 @@ namespace rrt_planner {
             } else {
                 //ROS_INFO("Obstacle between");
                 continue;
+            }
+
+            double dist = computeDistance(p_new, goal_);
+            //ROS_WARN("dist: %f", dist);
+            //ROS_WARN("best pos: %f, %f", p_new[0], p_new[1]);
+            if (dist < best_cost_) {
+                best_cost_ = dist;
+                best_node_id_ = getNodeId(p_new);
+                ROS_WARN("best_cost: %f", best_cost_);
+                ROS_WARN("best pos: %f, %f", p_new[0], p_new[1]);
+                ROS_WARN("best_node_id_: %d", best_node_id_);
             }
 
             if(k > params_.min_num_nodes) {
@@ -139,6 +161,19 @@ namespace rrt_planner {
 
         goal_[0] = goal[0];
         goal_[1] = goal[1];
+    }
+
+    int RRTPlanner::getNodeId(double *point) {
+        for (int i = 0; i < nodes_.size(); i++) {
+            if (nodes_[i].pos[0] == point[0] && nodes_[i].pos[1] == point[1]) {
+                return nodes_[i].node_id;
+            }
+        }
+        return -1;
+    }
+
+    int RRTPlanner::getBestNodeId() {
+        return best_node_id_;
     }
 
 };

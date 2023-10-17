@@ -77,7 +77,7 @@ namespace rrt_planner {
       }
 
       // ---------------------- To Get The Costmap Configs -----------------------
-      
+      /*    
       // Get the size of the costmap in cells (width and height)
       unsigned int costmapWidth = costmap_->getSizeInCellsX();
       unsigned int costmapHeight = costmap_->getSizeInCellsY();
@@ -98,6 +98,7 @@ namespace rrt_planner {
       // Print or log the boundaries
       ROS_INFO("Costmap Bounds: MinX=%.2lf, MaxX=%.2lf, MinY=%.2lf, MaxY=%.2lf",
          costmapMinX, costmapMaxX, costmapMinY, costmapMaxY);
+      */
 
       // ---------------------- To Get The Costmap Configs -----------------------
 
@@ -141,58 +142,77 @@ namespace rrt_planner {
       ROS_INFO("costmap_2d::NO_INFORMATION: %u", costmap_2d::NO_INFORMATION);
       */
 
-      if( planner_->planPath() ){
-
-        plan_time_ = ros::Time::now();
-
-        rrt_tree_ = planner_->getTree();
-        current_id_ = rrt_tree_.size() - 1; // Add last vertex (closest to goal)
-
-        pose_stamped_.header.stamp = plan_time_;
-        pose_stamped_.header.frame_id = global_frame_;
-
-        pose_stamped_.pose.orientation = goal.pose.orientation; // Set goal orientation for last node
-        
-        // Work our way back to start waypoint, building plan
-        while (current_id_ != 0) {
+      do {
+        if(planner_->planPath() ) {
+          ROS_INFO("[RRTPlanner] Found a path.");
           
-          // Retrieve pose of current ID
-          pose_stamped_.pose.position.x = rrt_tree_[current_id_].pos[0];
-          pose_stamped_.pose.position.y = rrt_tree_[current_id_].pos[1];
-          pose_stamped_.pose.position.z = 0.;
-          plan.push_back(pose_stamped_);           // Add pose to plan
+          followPath(start, goal, plan);
 
-          prev_id_ = current_id_; // Identify next vertex in path (parent node), store previous ID
-          current_id_ = rrt_tree_[current_id_].parent_id;
+          return true;
 
-          // Set orientation for next iteration
-          dy_ = rrt_tree_[prev_id_].pos[1] - rrt_tree_[current_id_].pos[1];
-          dx_ = rrt_tree_[prev_id_].pos[0] - rrt_tree_[current_id_].pos[0];
+        } else {
+          ROS_WARN("[RRTPlanner] Failed to find a path.");
 
-          yaw_ = atan2(dy_, dx_);  // Get yaw from atan2 using current point and previous point
-          quat_tf_.setRPY(0., 0., yaw_); // Convert RPY to quat
-          quat_msg_ = tf2::toMsg(quat_tf_); // Convert Quat TF to msg
-          pose_stamped_.pose.orientation = quat_msg_; // set orientation
+          followPath(start, goal, plan);
+          //return true;
+
+          rrt_tree_ = planner_->getTree();
+          double* best_node_pos = rrt_tree_[planner_->getBestNodeId()].pos;
+          planner_->setStart(best_node_pos);
+          //planner_->setGoal(world_goal); // TODO: maybe is unecessary!
+
+          //return false;
         }
+      } while (true);
+  }
 
-        // Add start waypoint
-        pose_stamped_.pose.position.x = rrt_tree_[0].pos[0];
-        pose_stamped_.pose.position.y = rrt_tree_[0].pos[1];
-        pose_stamped_.pose.position.z = 0.;
-        pose_stamped_.pose.orientation = start.pose.orientation;
-        plan.push_back(pose_stamped_);
+  void RRTPlannerROS::followPath(const geometry_msgs::PoseStamped& start, 
+                                    const geometry_msgs::PoseStamped& goal,
+                                    std::vector<geometry_msgs::PoseStamped>& plan) {
+    plan_time_ = ros::Time::now();
 
-        // Reverse so that initial waypoint is first and goal is last
-        std::reverse(plan.begin(), plan.end());
-        publishPlan(plan);
+    rrt_tree_ = planner_->getTree();
+    //current_id_ = rrt_tree_.size() - 1; // Add last vertex (closest to goal)
+    current_id_ = planner_->getBestNodeId(); // Add last vertex (closest to goal)
+    ROS_INFO("[RRTPlanner] Best Node ID: %d", current_id_);
 
-        return true;
+    pose_stamped_.header.stamp = plan_time_;
+    pose_stamped_.header.frame_id = global_frame_;
 
-      } else {
+    pose_stamped_.pose.orientation = goal.pose.orientation; // Set goal orientation for last node
+    
+    // Work our way back to start waypoint, building plan
+    while (current_id_ != 0) {
+      
+      // Retrieve pose of current ID
+      pose_stamped_.pose.position.x = rrt_tree_[current_id_].pos[0];
+      pose_stamped_.pose.position.y = rrt_tree_[current_id_].pos[1];
+      pose_stamped_.pose.position.z = 0.;
+      plan.push_back(pose_stamped_);           // Add pose to plan
 
-        ROS_WARN("[RRTPlanner] Failed to find a path.");
-        return false;
-      }
+      prev_id_ = current_id_; // Identify next vertex in path (parent node), store previous ID
+      current_id_ = rrt_tree_[current_id_].parent_id;
+
+      // Set orientation for next iteration
+      dy_ = rrt_tree_[prev_id_].pos[1] - rrt_tree_[current_id_].pos[1];
+      dx_ = rrt_tree_[prev_id_].pos[0] - rrt_tree_[current_id_].pos[0];
+
+      yaw_ = atan2(dy_, dx_);  // Get yaw from atan2 using current point and previous point
+      quat_tf_.setRPY(0., 0., yaw_); // Convert RPY to quat
+      quat_msg_ = tf2::toMsg(quat_tf_); // Convert Quat TF to msg
+      pose_stamped_.pose.orientation = quat_msg_; // set orientation
+    }
+
+    // Add start waypoint
+    pose_stamped_.pose.position.x = rrt_tree_[0].pos[0];
+    pose_stamped_.pose.position.y = rrt_tree_[0].pos[1];
+    pose_stamped_.pose.position.z = 0.;
+    pose_stamped_.pose.orientation = start.pose.orientation;
+    plan.push_back(pose_stamped_);
+
+    // Reverse so that initial waypoint is first and goal is last
+    std::reverse(plan.begin(), plan.end());
+    publishPlan(plan);
   }
 
   void RRTPlannerROS::publishPlan(const std::vector<geometry_msgs::PoseStamped>& path) {

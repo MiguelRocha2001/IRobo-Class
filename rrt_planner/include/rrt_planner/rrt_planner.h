@@ -75,6 +75,10 @@ namespace rrt_planner {
              */
             const std::vector<Node>& getTree();
 
+            int getNodeId(double *point);
+
+            int getBestNodeId();
+
             ~RRTPlanner() {};
 
             
@@ -82,6 +86,8 @@ namespace rrt_planner {
                 double start_[2], goal_[2];
                 double rand_point_[2], candidate_point_[2];
                 float map_width_, map_height_;
+                int best_node_id_;
+                double best_cost_;
                 costmap_2d::Costmap2D* costmap_;
                 std::vector<Node> nodes_;
                 rrt_params params_;

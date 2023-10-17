@@ -69,8 +69,12 @@ namespace rrt_planner {
                                 const geometry_msgs::PoseStamped& goal,
                                     std::vector<geometry_msgs::PoseStamped>& plan);
 
+            void followPath(const geometry_msgs::PoseStamped& start, 
+                                    const geometry_msgs::PoseStamped& goal, 
+                                    std::vector<geometry_msgs::PoseStamped>& plan);
 
-            void publishPlan(const std::vector<geometry_msgs::PoseStamped>& path);
+
+            void publishPlan(const std::vector<geometry_msgs::PoseStamped>& path);            
 
             ~RRTPlannerROS() {};
 
