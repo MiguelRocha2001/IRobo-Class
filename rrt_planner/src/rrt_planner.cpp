@@ -33,7 +33,7 @@ namespace rrt_planner {
 
         //ROS_WARN("start pos: %f, %f", start_[0], start_[1]);
         //ROS_WARN("goal pos: %f, %f", goal_[0], goal_[1]);
-        //ROS_WARN("best_cost_: %f", best_cost_);
+        //ROS_WARN("best_cost_initial: %f", best_cost_);
 
         double *p_rand, *p_new;
         Node nearest_node;
@@ -60,10 +60,12 @@ namespace rrt_planner {
             //ROS_WARN("best pos: %f, %f", p_new[0], p_new[1]);
             if (dist < best_cost_) {
                 best_cost_ = dist;
-                best_node_id_ = getNodeId(p_new);
-                ROS_WARN("best_cost: %f", best_cost_);
+                best_node_id_ = nearest_node.node_id + 1;
+                best_pos_[0] = p_new[0];
+                best_pos_[1] = p_new[1];
+                //ROS_WARN("best_cost: %f", best_cost_);
                 ROS_WARN("best pos: %f, %f", p_new[0], p_new[1]);
-                ROS_WARN("best_node_id_: %d", best_node_id_);
+                //ROS_WARN("best_node_id_: %d", best_node_id_);
             }
 
             if(k > params_.min_num_nodes) {
@@ -176,4 +178,20 @@ namespace rrt_planner {
         return best_node_id_;
     }
 
+    double RRTPlanner::getBestCost() {
+        return best_cost_;
+    }
+
+    Node RRTPlanner::getNode(int node_id) {
+        for (int i = 0; i < nodes_.size(); i++) {
+            if (nodes_[i].node_id == node_id) {
+                return nodes_[i];
+            }
+        }
+        // TODO: handle this case
+    }
+
+    double* RRTPlanner::getBestNodePos() {
+        return best_pos_;
+    }
 };

@@ -153,13 +153,18 @@ namespace rrt_planner {
         } else {
           ROS_WARN("[RRTPlanner] Failed to find a path.");
 
+          double* best_node_pos = planner_->getBestNodePos();
+          //ROS_WARN("best node id outside path: %d", planner_->getBestNodeId());
+          ROS_WARN("best node pos outside path: (%f, %f)", best_node_pos[0], best_node_pos[1]);
+
           followPath(start, goal, plan);
           //return true;
 
-          rrt_tree_ = planner_->getTree();
-          double* best_node_pos = rrt_tree_[planner_->getBestNodeId()].pos;
           planner_->setStart(best_node_pos);
           //planner_->setGoal(world_goal); // TODO: maybe is unecessary!
+
+          
+          //ROS_WARN("best_cost_ outside path: %f", planner_->getBestCost());
 
           //return false;
         }
@@ -174,7 +179,7 @@ namespace rrt_planner {
     rrt_tree_ = planner_->getTree();
     //current_id_ = rrt_tree_.size() - 1; // Add last vertex (closest to goal)
     current_id_ = planner_->getBestNodeId(); // Add last vertex (closest to goal)
-    ROS_INFO("[RRTPlanner] Best Node ID: %d", current_id_);
+    //ROS_INFO("[RRTPlanner] Best Node ID: %d", current_id_);
 
     pose_stamped_.header.stamp = plan_time_;
     pose_stamped_.header.frame_id = global_frame_;
