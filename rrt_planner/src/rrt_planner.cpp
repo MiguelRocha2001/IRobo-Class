@@ -7,10 +7,10 @@ namespace rrt_planner {
             const rrt_params& params) : params_(params), collision_dect_(costmap) {
 
         costmap_ = costmap->getCostmap();
-        //map_width_  = costmap_->getSizeInMetersX();
-        //map_height_ = costmap_->getSizeInMetersY();
-        map_width_  = 3;
-        map_height_ = 3;
+        map_width_  = costmap_->getSizeInMetersX();
+        map_height_ = costmap_->getSizeInMetersY();
+        //map_width_  = 3;
+        //map_height_ = 3;
 
         //ROS_INFO("map_width_: %f", map_width_);
         //ROS_INFO("map_height_: %f", map_height_);
@@ -28,6 +28,8 @@ namespace rrt_planner {
 
         // Start Node
         createNewNode(start_, -1);
+        best_pos_[0] = start_[0];
+        best_pos_[1] = start_[1];
         best_node_id_ = 0;
         best_cost_ = computeDistance(start_, goal_);
 

@@ -58,6 +58,11 @@ namespace rrt_planner {
                                     const geometry_msgs::PoseStamped& goal, 
                                         std::vector<geometry_msgs::PoseStamped>& plan) {
 
+      for (int i = 0; i <100; i++)                                        
+      {
+        ROS_ERROR("AGAIN!!!!!!");
+      }
+
       if(!initialized_){
         ROS_ERROR("This planner has not been initialized yet, but it is being used, please call initialize() before use");
         return false;
@@ -155,15 +160,12 @@ namespace rrt_planner {
 
           double* best_node_pos = planner_->getBestNodePos();
           //ROS_WARN("best node id outside path: %d", planner_->getBestNodeId());
-          ROS_WARN("best node pos outside path: (%f, %f)", best_node_pos[0], best_node_pos[1]);
+          //ROS_WARN("best node pos outside path: (%f, %f)", best_node_pos[0], best_node_pos[1]);
 
           followPath(start, goal, plan);
-          //return true;
 
-          planner_->setStart(best_node_pos);
-          //planner_->setGoal(world_goal); // TODO: maybe is unecessary!
+          planner_->setStart(best_node_pos);          
 
-          
           //ROS_WARN("best_cost_ outside path: %f", planner_->getBestCost());
 
           //return false;
