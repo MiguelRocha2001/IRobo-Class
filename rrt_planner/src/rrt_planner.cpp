@@ -25,6 +25,7 @@ namespace rrt_planner {
 
         // clear everything before planning
         nodes_.clear();
+        newBestNodeFound_ = 0;
 
         // Start Node
         createNewNode(start_, -1);
@@ -65,6 +66,7 @@ namespace rrt_planner {
                 best_node_id_ = nearest_node.node_id + 1;
                 best_pos_[0] = p_new[0];
                 best_pos_[1] = p_new[1];
+                newBestNodeFound_ = 1;
                 //ROS_WARN("best_cost: %f", best_cost_);
                 ROS_WARN("best pos: %f, %f", p_new[0], p_new[1]);
                 //ROS_WARN("best_node_id_: %d", best_node_id_);
@@ -195,5 +197,9 @@ namespace rrt_planner {
 
     double* RRTPlanner::getBestNodePos() {
         return best_pos_;
+    }
+
+    int RRTPlanner::newBestNodeFound() {
+        return newBestNodeFound_;
     }
 };

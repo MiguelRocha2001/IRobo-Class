@@ -85,6 +85,8 @@ namespace rrt_planner {
 
             double* getBestNodePos();
 
+            int newBestNodeFound();
+
             ~RRTPlanner() {};
 
             
@@ -95,6 +97,7 @@ namespace rrt_planner {
                 int best_node_id_;
                 double best_pos_[2];
                 double best_cost_;
+                int newBestNodeFound_;
                 costmap_2d::Costmap2D* costmap_;
                 std::vector<Node> nodes_;
                 rrt_params params_;
