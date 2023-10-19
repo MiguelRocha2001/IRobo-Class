@@ -130,8 +130,8 @@ namespace rrt_planner {
           return false;
       }
 
-      ROS_INFO("[RRTPlanner] Current Position: (%.2lf, %.2lf)", world_start[0], world_start[1]);
-      ROS_INFO("[RRTPlanner] GOAL Position: (%.2lf, %.2lf)", world_goal[0], world_goal[1]);
+      //ROS_INFO("[RRTPlanner] Current Position: (%.2lf, %.2lf)", world_start[0], world_start[1]);
+      //ROS_INFO("[RRTPlanner] GOAL Position: (%.2lf, %.2lf)", world_goal[0], world_goal[1]);
 
       planner_->setStart(world_start);
       planner_->setGoal(world_goal);
@@ -148,10 +148,18 @@ namespace rrt_planner {
           
           followPath(start, goal, plan);
 
+          //planner_->restoreObstacleCost();
+
           return true;
 
         } else {
           ROS_WARN("[RRTPlanner] Failed to find a path.");
+
+          if (planner_->newBestNodeFound() == 0)
+          {
+            //planner_->increaseObstacleCost();
+            //return false;
+          }
 
           double* best_node_pos = planner_->getBestNodePos();
           //ROS_WARN("best node id outside path: %d", planner_->getBestNodeId());
@@ -161,8 +169,6 @@ namespace rrt_planner {
 
           planner_->setStart(best_node_pos);          
 
-          if (planner_->newBestNodeFound() == 0)
-            return false;
 
           //ROS_WARN("best_cost_ outside path: %f", planner_->getBestCost());
 
@@ -174,6 +180,7 @@ namespace rrt_planner {
   void RRTPlannerROS::followPath(const geometry_msgs::PoseStamped& start, 
                                     const geometry_msgs::PoseStamped& goal,
                                     std::vector<geometry_msgs::PoseStamped>& plan) {
+
     plan_time_ = ros::Time::now();
 
     rrt_tree_ = planner_->getTree();

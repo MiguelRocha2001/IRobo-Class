@@ -68,7 +68,7 @@ namespace rrt_planner {
                 best_pos_[1] = p_new[1];
                 newBestNodeFound_ = 1;
                 //ROS_WARN("best_cost: %f", best_cost_);
-                ROS_WARN("best pos: %f, %f", p_new[0], p_new[1]);
+                //ROS_WARN("best pos: %f, %f", p_new[0], p_new[1]);
                 //ROS_WARN("best_node_id_: %d", best_node_id_);
             }
 
@@ -186,20 +186,23 @@ namespace rrt_planner {
         return best_cost_;
     }
 
-    Node RRTPlanner::getNode(int node_id) {
-        for (int i = 0; i < nodes_.size(); i++) {
-            if (nodes_[i].node_id == node_id) {
-                return nodes_[i];
-            }
-        }
-        // TODO: handle this case
-    }
-
     double* RRTPlanner::getBestNodePos() {
         return best_pos_;
     }
 
     int RRTPlanner::newBestNodeFound() {
         return newBestNodeFound_;
+    }
+
+    void RRTPlanner::increaseObstacleCost() {
+        collision_dect_.increaseObstacleCost();
+    }
+
+    void RRTPlanner::restoreObstacleCost() {
+        collision_dect_.restoreObstacleCost();
+    }
+
+    void RRTPlanner::decreaseObstacleCost() {
+        collision_dect_.decreaseObstacleCost();
     }
 };

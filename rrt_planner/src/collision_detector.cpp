@@ -11,6 +11,7 @@ namespace rrt_planner {
         origin_x_ = costmap_->getOriginX();
         origin_y_ = costmap_->getOriginY();
 
+        restoreObstacleCost();
     }
 
     // IMPLEMENTED THIS 
@@ -26,7 +27,20 @@ namespace rrt_planner {
         unsigned char cost = costmap_->getCost(mx, my);
 
         // If the cost is less than the threshold, it's considered free space
-        return cost <= 127;
+        return cost <= obstacleCost_;
+    }
+
+    void CollisionDetector::increaseObstacleCost() {
+        obstacleCost_ += 5;
+    }
+
+    void CollisionDetector::restoreObstacleCost() {
+        obstacleCost_ = 127;
+    }
+
+    void CollisionDetector::decreaseObstacleCost() {
+        if (obstacleCost_ > 127)
+            obstacleCost_ -= 5;
     }
 
     bool CollisionDetector::obstacleBetween(const double* point_a, const double* point_b) {

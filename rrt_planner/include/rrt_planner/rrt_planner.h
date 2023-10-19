@@ -80,12 +80,16 @@ namespace rrt_planner {
             int getBestNodeId();
 
             double getBestCost();
-            
-            Node getNode(int node_id);
 
             double* getBestNodePos();
 
             int newBestNodeFound();
+
+            void increaseObstacleCost();
+
+            void restoreObstacleCost();
+
+            void decreaseObstacleCost();
 
             ~RRTPlanner() {};
 
