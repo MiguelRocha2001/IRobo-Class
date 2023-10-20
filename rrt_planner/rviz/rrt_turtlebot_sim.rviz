@@ -238,6 +238,12 @@ Visualization Manager:
       Topic: /move_base/DWAPlannerROS/local_plan
       Unreliable: false
       Value: true
+    - Class: rviz/Marker
+      Marker Topic: /visualization_marker
+      Name: Marker
+      Queue Size: 10
+      Value: true
+      Enabled: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
