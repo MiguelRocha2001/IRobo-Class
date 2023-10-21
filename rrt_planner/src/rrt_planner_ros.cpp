@@ -1,6 +1,7 @@
 
 #include <rrt_planner/rrt_planner_ros.h>
 #include <pluginlib/class_list_macros.h>
+#include <algorithm>
 
 // register this planner as a BaseGlobalPlanner plugin
 PLUGINLIB_EXPORT_CLASS(rrt_planner::RRTPlannerROS, nav_core::BaseGlobalPlanner)
@@ -145,8 +146,10 @@ namespace rrt_planner {
       do {
         if(planner_->planPath() ) {
           ROS_INFO("[RRTPlanner] Found a path.");
-          
-          followPath(start, goal, plan);
+
+          followPath(start, goal, plan, 1);
+
+          //follow(start, goal, plan, positions);
 
           //planner_->restoreObstacleCost();
 
@@ -162,13 +165,13 @@ namespace rrt_planner {
           }
 
           double* best_node_pos = planner_->getBestNodePos();
+          
           //ROS_WARN("best node id outside path: %d", planner_->getBestNodeId());
           //ROS_WARN("best node pos outside path: (%f, %f)", best_node_pos[0], best_node_pos[1]);
 
-          followPath(start, goal, plan);
+          followPath(start, goal, plan, 0);
 
-          planner_->setStart(best_node_pos);          
-
+          planner_->setStart(best_node_pos);       
 
           //ROS_WARN("best_cost_ outside path: %f", planner_->getBestCost());
 
@@ -177,12 +180,14 @@ namespace rrt_planner {
       } while (true);
   }
 
+
   void RRTPlannerROS::followPath(const geometry_msgs::PoseStamped& start, 
                                     const geometry_msgs::PoseStamped& goal,
-                                    std::vector<geometry_msgs::PoseStamped>& plan) {
+                                    std::vector<geometry_msgs::PoseStamped>& plan,
+                                    int x) {
 
     plan_time_ = ros::Time::now();
-
+    //plan.clear();
     rrt_tree_ = planner_->getTree();
     //current_id_ = rrt_tree_.size() - 1; // Add last vertex (closest to goal)
     current_id_ = planner_->getBestNodeId(); // Add last vertex (closest to goal)
@@ -193,9 +198,25 @@ namespace rrt_planner {
 
     pose_stamped_.pose.orientation = goal.pose.orientation; // Set goal orientation for last node
     
+    double world_start[2];
+    world_start[0] = start.pose.position.x;
+    world_start[1] = start.pose.position.y;
+
+    /*
+    printf("BEGGINING");
+    for (int i = 0; i < plan.size(); ++i) {
+      printf("plan[%d]: (%f, %f)\n", i, plan[i].pose.position.x, plan[i].pose.position.y);
+    }*/
+
     // Work our way back to start waypoint, building plan
     while (current_id_ != 0) {
-      
+      /* 
+      if (computeDistance(rrt_tree_[current_id_].pos, world_start) < computeDistance(rrt_tree_[prev_id_].pos, world_start)) {
+        prev_id_ = current_id_; // Identify next vertex in path (parent node), store previous ID
+        current_id_ = rrt_tree_[current_id_].parent_id;
+        continue;
+      }
+      */
       // Retrieve pose of current ID
       pose_stamped_.pose.position.x = rrt_tree_[current_id_].pos[0];
       pose_stamped_.pose.position.y = rrt_tree_[current_id_].pos[1];
@@ -208,23 +229,31 @@ namespace rrt_planner {
       // Set orientation for next iteration
       dy_ = rrt_tree_[prev_id_].pos[1] - rrt_tree_[current_id_].pos[1];
       dx_ = rrt_tree_[prev_id_].pos[0] - rrt_tree_[current_id_].pos[0];
-
       yaw_ = atan2(dy_, dx_);  // Get yaw from atan2 using current point and previous point
       quat_tf_.setRPY(0., 0., yaw_); // Convert RPY to quat
       quat_msg_ = tf2::toMsg(quat_tf_); // Convert Quat TF to msg
       pose_stamped_.pose.orientation = quat_msg_; // set orientation
+
     }
 
-    // Add start waypoint
-    pose_stamped_.pose.position.x = rrt_tree_[0].pos[0];
-    pose_stamped_.pose.position.y = rrt_tree_[0].pos[1];
-    pose_stamped_.pose.position.z = 0.;
-    pose_stamped_.pose.orientation = start.pose.orientation;
-    plan.push_back(pose_stamped_);
+    if (plan.size() == 1) {
+      // Add start waypoint
+      pose_stamped_.pose.position.x = rrt_tree_[0].pos[0];
+      pose_stamped_.pose.position.y = rrt_tree_[0].pos[1];
+      pose_stamped_.pose.position.z = 0.;
+      pose_stamped_.pose.orientation = start.pose.orientation;
+      plan.push_back(pose_stamped_);
+    }
 
-    // Reverse so that initial waypoint is first and goal is last
-    std::reverse(plan.begin(), plan.end());
-    publishPlan(plan);
+    if (x == 1) {
+      publishPlan(plan);
+    }
+  
+    /* 
+    for (int i = 0; i < plan.size(); ++i) {
+      printf("plan[%d]: (%f, %f)\n", i, plan[i].pose.position.x, plan[i].pose.position.y);
+    }
+    */
   }
 
   void RRTPlannerROS::publishPlan(const std::vector<geometry_msgs::PoseStamped>& path) {
