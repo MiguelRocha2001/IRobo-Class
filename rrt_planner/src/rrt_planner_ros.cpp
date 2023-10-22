@@ -202,6 +202,10 @@ namespace rrt_planner {
     world_start[0] = start.pose.position.x;
     world_start[1] = start.pose.position.y;
 
+    double world_goal[2];
+    world_goal[0] = goal.pose.position.x;
+    world_goal[1] = goal.pose.position.y;
+
     /*
     printf("BEGGINING");
     for (int i = 0; i < plan.size(); ++i) {
@@ -237,16 +241,52 @@ namespace rrt_planner {
     }
 
     if (plan.size() == 1) {
-      // Add start waypoint
-      pose_stamped_.pose.position.x = rrt_tree_[0].pos[0];
-      pose_stamped_.pose.position.y = rrt_tree_[0].pos[1];
-      pose_stamped_.pose.position.z = 0.;
-      pose_stamped_.pose.orientation = start.pose.orientation;
-      plan.push_back(pose_stamped_);
+      /* */
     }
+    // Add start waypoint
+    pose_stamped_.pose.position.x = rrt_tree_[0].pos[0];
+    pose_stamped_.pose.position.y = rrt_tree_[0].pos[1];
+    pose_stamped_.pose.position.z = 0.;
+    pose_stamped_.pose.orientation = start.pose.orientation;
+    plan.push_back(pose_stamped_);
 
     if (x == 1) {
-      publishPlan(plan);
+      std::vector<geometry_msgs::PoseStamped> revised_plan;
+      //revised_plan.push_back(start);
+      revised_plan.insert(revised_plan.begin(), start);
+      double distance_start_to_goal = computeDistance(world_start, world_goal);
+      double position[2];
+
+      double closestDistance = distance_start_to_goal;
+      for (int i = 0; i < plan.size(); ++i) {
+        position[0] = plan[i].pose.position.x;
+        position[1] = plan[i].pose.position.y;
+        double distance = computeDistance(position, world_goal);
+        printf("Position %d: (%f, %f)\n", i, position[0], position[1]);
+        printf("distance: %f\n", distance);
+        printf("distance_start_to_goal: %f\n", distance_start_to_goal);
+        printf("closesDistance: %f\n", closestDistance);
+        if (distance >= distance_start_to_goal) {
+          continue;
+        } 
+        if (distance >= closestDistance) {
+          if (i != 0) {
+            revised_plan[revised_plan.size()-1].pose.orientation = plan[i].pose.orientation;
+          }
+          continue;
+        }
+        closestDistance = distance;
+        revised_plan.push_back(plan[i]);
+      }
+
+      for (int i = 0; i < revised_plan.size(); ++i) {
+        position[0] = revised_plan[i].pose.position.x;
+        position[1] = revised_plan[i].pose.position.y;
+        ROS_INFO("revised_plan[%d]: (%f, %f)", i, revised_plan[i].pose.position.x, revised_plan[i].pose.position.y);
+        ROS_INFO("distance: %f", computeDistance(position, world_goal));
+      }
+
+      publishPlan(revised_plan);
     }
   
     /* 

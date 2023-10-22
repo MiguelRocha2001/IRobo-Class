@@ -1,5 +1,6 @@
 
 #include <rrt_planner/rrt_planner.h>
+#include <cstdlib> 
 
 namespace rrt_planner {
 
@@ -125,13 +126,24 @@ namespace rrt_planner {
 
     // IMPLEMENTED THIS
     double* RRTPlanner::sampleRandomPoint() {
-        do {
-            rand_point_[0] = random_double_x.generate();
-            rand_point_[1] = random_double_y.generate();
+        double bias = 0.2;
 
-            //ROS_WARN("rand_point_[0]: %f", rand_point_[0]);
-            //ROS_WARN("rand_point_[1]: %f", rand_point_[1]);
-        } while(collision_dect_.inFreeSpace(rand_point_));
+        double r = ((double) rand() / (RAND_MAX));
+
+        if (r < bias) {
+            rand_point_[0] = goal_[0];
+            rand_point_[1] = goal_[1];
+            return rand_point_;
+        }
+        else {
+            do {
+                rand_point_[0] = random_double_x.generate();
+                rand_point_[1] = random_double_y.generate();
+
+                //ROS_WARN("rand_point_[0]: %f", rand_point_[0]);
+                //ROS_WARN("rand_point_[1]: %f", rand_point_[1]);
+            } while(collision_dect_.inFreeSpace(rand_point_));
+        }
 
         return rand_point_;
     }

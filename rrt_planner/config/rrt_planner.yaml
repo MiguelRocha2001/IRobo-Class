@@ -1,5 +1,5 @@
 RRTPlannerROS: {
-  goal_tolerance: 0.20,
+  goal_tolerance: 0.10,
 
   rrt: {
     step: 0.15,

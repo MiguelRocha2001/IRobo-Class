@@ -27,7 +27,7 @@ namespace rrt_planner {
         unsigned char cost = costmap_->getCost(mx, my);
 
         // If the cost is less than the threshold, it's considered free space
-        return cost <= obstacleCost_;
+        return cost <= 127;
     }
 
     void CollisionDetector::increaseObstacleCost() {
