@@ -1,6 +1,7 @@
 
 #include <rrt_planner/rrt_planner.h>
 #include <cstdlib> 
+#include <utility>
 
 namespace rrt_planner {
 
@@ -33,7 +34,7 @@ namespace rrt_planner {
         best_pos_[0] = start_[0];
         best_pos_[1] = start_[1];
         best_node_id_ = 0;
-        best_cost_ = computeDistance(start_, goal_);
+        //best_cost_ = computeDistance(start_, goal_);
 
         //ROS_WARN("start pos: %f, %f", start_[0], start_[1]);
         //ROS_WARN("goal pos: %f, %f", goal_[0], goal_[1]);
@@ -251,5 +252,43 @@ namespace rrt_planner {
 
     void RRTPlanner::decreaseObstacleCost() {
         collision_dect_.decreaseObstacleCost();
+    }
+
+    std::vector<int> RRTPlanner::trimPath(std::vector<geometry_msgs::PoseStamped> plan) {
+    
+        std::vector<int> cleared_plan;
+        std::vector<std::pair<int,int>> points_to_remove;
+        double* previous_position;
+        double* next_position;
+        previous_position = new double[2];
+        next_position = new double[2];
+        
+        for (int i = 0; i < plan.size()-1; i++) {
+            previous_position[0] = plan[i].pose.position.x;
+            previous_position[1] = plan[i].pose.position.y;
+            for (int j = i+1; j < plan.size(); j++) {
+                next_position[0] = plan[j].pose.position.x;
+                next_position[1] = plan[j].pose.position.y;
+                
+                
+                if(!collision_dect_.obstacleBetween(previous_position, next_position)) {
+                }
+                else {
+                    points_to_remove.push_back(std::make_pair(i,j));
+                    i=j;
+                }
+
+            }
+        }
+
+        for (int i = 0; i < points_to_remove.size(); i++) {
+            if (points_to_remove[i].second - points_to_remove[i].first > 1) {
+                for (int j = points_to_remove[i].first+1; j < points_to_remove[i].second; j++) {
+                    cleared_plan.insert(cleared_plan.begin(), j);
+                }
+            }
+        }
+
+        return cleared_plan;
     }
 };

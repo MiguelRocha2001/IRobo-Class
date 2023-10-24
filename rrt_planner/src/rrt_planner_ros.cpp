@@ -143,6 +143,8 @@ namespace rrt_planner {
       ROS_INFO("costmap_2d::NO_INFORMATION: %u", costmap_2d::NO_INFORMATION);
       */
       
+      planner_->setBestCost(computeDistance(world_start, world_goal));
+
       do {
         if(planner_->planPath() ) {
           ROS_INFO("[RRTPlanner] Found a path.");
@@ -177,6 +179,11 @@ namespace rrt_planner {
           {
             printf("aaaa");
             printf("best_cost_: %f\n", planner_->getBestCost());
+            planner_->setBestCost(10);
+            //printf("distnace strat to goal: %f\n", computeDistance(world_start, world_goal));
+            if (computeDistance(world_start, world_goal) < params_.goal_tolerance) {
+              return true;
+            }
             //planner_->increaseObstacleCost();
             //return false;
           }
@@ -303,15 +310,31 @@ namespace rrt_planner {
     //std::reverse(plan.begin(), plan.end());
 
     if (x == 1) {
+      std::vector<int> revised_plan;
+      std::vector<geometry_msgs::PoseStamped> clean_path;
+
+      revised_plan = planner_->trimPath(plan);
       double position[2];
+      
+
       for (int i = 0; i < plan.size(); ++i) {
         position[0] = plan[i].pose.position.x;
         position[1] = plan[i].pose.position.y;
-        ROS_INFO("revised_plan[%d]: (%f, %f)", i, plan[i].pose.position.x, plan[i].pose.position.y);
+        ROS_INFO("plan[%d]: (%f, %f)", i, plan[i].pose.position.x, plan[i].pose.position.y);
         ROS_INFO("distance: %f", computeDistance(position, world_goal));
       }
 
-      publishPlan(plan);
+    
+      for(size_t i = 0; i < plan.size(); ++i) {
+        // Use std::find to check if i is an exclusion index
+        if(std::find(revised_plan.begin(), revised_plan.end(), i) == revised_plan.end()) {
+            // i is not an exclusion index, so include my_vector[i] in result_vector
+            clean_path.push_back(plan[i]);
+        }
+      }
+      
+
+      publishPlan(clean_path);
     }
 
 
