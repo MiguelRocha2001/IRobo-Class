@@ -257,12 +257,31 @@ namespace rrt_planner {
     std::vector<int> RRTPlanner::trimPath(std::vector<geometry_msgs::PoseStamped> plan) {
     
         std::vector<int> cleared_plan;
-        std::vector<std::pair<int,int>> points_to_remove;
         double* previous_position;
         double* next_position;
         previous_position = new double[2];
         next_position = new double[2];
+
+        cleared_plan.insert(cleared_plan.begin(), plan.size()-1);
         
+    
+        for (int i = plan.size()-1; i > 0; i--) {
+            previous_position[0] = plan[i].pose.position.x;
+            previous_position[1] = plan[i].pose.position.y;
+            for (int j = 0; j < i; j++) {
+                next_position[0] = plan[j].pose.position.x;
+                next_position[1] = plan[j].pose.position.y;
+                
+                if(!collision_dect_.obstacleBetween(previous_position, next_position)) {
+                    i = j;
+                    cleared_plan.insert(cleared_plan.begin(), j);
+                }
+                
+            }
+        }
+        
+
+        /*
         for (int i = 0; i < plan.size()-1; i++) {
             previous_position[0] = plan[i].pose.position.x;
             previous_position[1] = plan[i].pose.position.y;
@@ -288,6 +307,9 @@ namespace rrt_planner {
                 }
             }
         }
+        */
+
+        std::reverse(cleared_plan.begin(), cleared_plan.end());
 
         return cleared_plan;
     }

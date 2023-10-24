@@ -316,7 +316,7 @@ namespace rrt_planner {
       revised_plan = planner_->trimPath(plan);
       double position[2];
       
-
+      /*
       for (int i = 0; i < plan.size(); ++i) {
         position[0] = plan[i].pose.position.x;
         position[1] = plan[i].pose.position.y;
@@ -324,15 +324,29 @@ namespace rrt_planner {
         ROS_INFO("distance: %f", computeDistance(position, world_goal));
       }
 
-    
+      for (int i = 0; i < revised_plan.size(); ++i) {
+        ROS_INFO("revised_plan[%d]: %d", i, revised_plan[i]);
+      }
+      */
+
+      
       for(size_t i = 0; i < plan.size(); ++i) {
         // Use std::find to check if i is an exclusion index
-        if(std::find(revised_plan.begin(), revised_plan.end(), i) == revised_plan.end()) {
+        if(std::find(revised_plan.begin(), revised_plan.end(), i) != revised_plan.end()) {
             // i is not an exclusion index, so include my_vector[i] in result_vector
             clean_path.push_back(plan[i]);
         }
       }
       
+      /*
+      for (int i = 0; i < clean_path.size(); ++i) {
+        position[0] = clean_path[i].pose.position.x;
+        position[1] = clean_path[i].pose.position.y;
+        ROS_INFO("clean_path[%d]: (%f, %f)", i, clean_path[i].pose.position.x, clean_path[i].pose.position.y);
+        ROS_INFO("distance: %f", computeDistance(position, world_goal));
+      }
+      
+      */
 
       publishPlan(clean_path);
     }
