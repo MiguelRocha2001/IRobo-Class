@@ -291,4 +291,39 @@ namespace rrt_planner {
 
         return cleared_plan;
     }
+
+    /*   
+   std::vector<int> RRTPlanner::trimPath(std::vector<geometry_msgs::PoseStamped> plan) {
+        std::vector<int> cleared_plan;
+        double* previous_position = new double[2];
+        double* target_position = new double[2];
+
+        int count = 0;        
+        int origin_position_index = 0; // reset target position
+        int target_position_index = plan.size() - 1; // reset target position
+        cleared_plan.insert(cleared_plan.end(), origin_position_index); // adds start position
+
+        while(true) {
+            previous_position[0] = plan[origin_position_index].pose.position.x;
+            previous_position[1] = plan[origin_position_index].pose.position.y;
+
+            target_position[0] = plan[target_position_index].pose.position.x;
+            target_position[1] = plan[target_position_index].pose.position.y;
+            
+            if(!collision_dect_.obstacleBetween(previous_position, target_position)) {
+                target_position_index -= 1;
+            }
+            else {
+                cleared_plan.insert(cleared_plan.end(), target_position_index);
+                origin_position_index = target_position_index;
+                
+                if (origin_position_index == plan.size() - 1) // objective / last node
+                    break;
+
+                target_position_index = plan.size() - 1; // reset target position
+            }
+        }
+        return cleared_plan;
+    }
+    */
 };

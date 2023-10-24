@@ -177,7 +177,7 @@ namespace rrt_planner {
 
           if (planner_->newBestNodeFound() == 0)
           {
-            printf("aaaa");
+            printf("Cannot find a best node!!!");
             printf("best_cost_: %f\n", planner_->getBestCost());
             planner_->setBestCost(10);
             //printf("distnace strat to goal: %f\n", computeDistance(world_start, world_goal));
