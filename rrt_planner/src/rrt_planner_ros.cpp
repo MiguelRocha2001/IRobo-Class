@@ -142,10 +142,25 @@ namespace rrt_planner {
       ROS_INFO("costmap_2d::LETHAL_OBSTACLE: %u", costmap_2d::LETHAL_OBSTACLE);
       ROS_INFO("costmap_2d::NO_INFORMATION: %u", costmap_2d::NO_INFORMATION);
       */
-
+      
       do {
         if(planner_->planPath() ) {
           ROS_INFO("[RRTPlanner] Found a path.");
+
+          double* best_node_pos = planner_->getBestNodePos();
+          double best_node_pos_x = best_node_pos[0];
+          double best_node_pos_y = best_node_pos[1];
+          printf("best_node_pos_x: %f\n", best_node_pos_x);
+          printf("best_node_pos_y: %f\n", best_node_pos_y);
+          int best_node_id = planner_->getBestNodeId();
+          printf("best node id: %d\n", best_node_id);
+          double best_node[2];
+          //best_node[0] = rrt_tree_[best_node_id].pos[0];
+          //best_node[1] = rrt_tree_[best_node_id].pos[1];
+          //printf("best_node[0]: %f\n", best_node[0]);
+          //printf("best_node[1]: %f\n", best_node[1]);
+          printf("distance best pos to goal: %f\n", computeDistance(best_node_pos, world_goal));
+
 
           followPath(start, goal, plan, 1);
 
@@ -160,11 +175,18 @@ namespace rrt_planner {
 
           if (planner_->newBestNodeFound() == 0)
           {
+            printf("aaaa");
+            printf("best_cost_: %f\n", planner_->getBestCost());
             //planner_->increaseObstacleCost();
             //return false;
           }
+        
 
           double* best_node_pos = planner_->getBestNodePos();
+          int best_node_id = planner_->getBestNodeId();
+
+          //printf("distance best pos to goal: %f\n", computeDistance(best_node_pos, world_goal));
+          //printf("best node id: %d\n", planner_->getBestNodeId());
           
           //ROS_WARN("best node id outside path: %d", planner_->getBestNodeId());
           //ROS_WARN("best node pos outside path: (%f, %f)", best_node_pos[0], best_node_pos[1]);
@@ -178,6 +200,7 @@ namespace rrt_planner {
           //return false;
         }
       } while (true);
+    
   }
 
 
@@ -187,11 +210,22 @@ namespace rrt_planner {
                                     int x) {
 
     plan_time_ = ros::Time::now();
-    //plan.clear();
+
     rrt_tree_ = planner_->getTree();
     //current_id_ = rrt_tree_.size() - 1; // Add last vertex (closest to goal)
+    double* best_node_pos = planner_->getBestNodePos();
+    double best_node_pos_x = best_node_pos[0];
+    double best_node_pos_y = best_node_pos[1];
+    //printf("best_node_pos_x: %f\n", best_node_pos_x);
+    //printf("best_node_pos_y: %f\n", best_node_pos_y);
     current_id_ = planner_->getBestNodeId(); // Add last vertex (closest to goal)
+    //printf("current_id_: %d\n", current_id_);
     //ROS_INFO("[RRTPlanner] Best Node ID: %d", current_id_);
+    double best_node[2];
+    best_node[0] = rrt_tree_[current_id_].pos[0];
+    best_node[1] = rrt_tree_[current_id_].pos[1];
+    //printf("best_node[0]: %f\n", best_node[0]);
+    //printf("best_node[1]: %f\n", best_node[1]);
 
     pose_stamped_.header.stamp = plan_time_;
     pose_stamped_.header.frame_id = global_frame_;
@@ -206,6 +240,9 @@ namespace rrt_planner {
     world_goal[0] = goal.pose.position.x;
     world_goal[1] = goal.pose.position.y;
 
+    std::vector<geometry_msgs::PoseStamped> temp_plan;
+
+    //printf("distance from best goal node: %f\n", computeDistance(best_node_pos, world_goal));
     /*
     printf("BEGGINING");
     for (int i = 0; i < plan.size(); ++i) {
@@ -225,7 +262,8 @@ namespace rrt_planner {
       pose_stamped_.pose.position.x = rrt_tree_[current_id_].pos[0];
       pose_stamped_.pose.position.y = rrt_tree_[current_id_].pos[1];
       pose_stamped_.pose.position.z = 0.;
-      plan.push_back(pose_stamped_);           // Add pose to plan
+      //plan.push_back(pose_stamped_);           // Add pose to plan
+      temp_plan.push_back(pose_stamped_);      // Add pose to temp plan
 
       prev_id_ = current_id_; // Identify next vertex in path (parent node), store previous ID
       current_id_ = rrt_tree_[current_id_].parent_id;
@@ -243,14 +281,43 @@ namespace rrt_planner {
     if (plan.size() == 1) {
       /* */
     }
+
     // Add start waypoint
     pose_stamped_.pose.position.x = rrt_tree_[0].pos[0];
     pose_stamped_.pose.position.y = rrt_tree_[0].pos[1];
     pose_stamped_.pose.position.z = 0.;
     pose_stamped_.pose.orientation = start.pose.orientation;
-    plan.push_back(pose_stamped_);
+    //plan.push_back(pose_stamped_);
+    temp_plan.push_back(pose_stamped_);      // Add pose to temp plan
+
+    std::reverse(temp_plan.begin(), temp_plan.end());
+    
+    for (int i = 0; i < temp_plan.size(); ++i) {
+      //printf("temp_plan[%d]: (%f, %f)\n", i, temp_plan[i].pose.position.x, temp_plan[i].pose.position.y);
+    }
+
+    //printf("\n");
+
+    plan.insert(plan.end(), temp_plan.begin(), temp_plan.end());
+    // Reverse order of plan
+    //std::reverse(plan.begin(), plan.end());
 
     if (x == 1) {
+      double position[2];
+      for (int i = 0; i < plan.size(); ++i) {
+        position[0] = plan[i].pose.position.x;
+        position[1] = plan[i].pose.position.y;
+        ROS_INFO("revised_plan[%d]: (%f, %f)", i, plan[i].pose.position.x, plan[i].pose.position.y);
+        ROS_INFO("distance: %f", computeDistance(position, world_goal));
+      }
+
+      publishPlan(plan);
+    }
+
+
+    /*
+    if (x == 1) {
+      
       std::vector<geometry_msgs::PoseStamped> revised_plan;
       //revised_plan.push_back(start);
       revised_plan.insert(revised_plan.begin(), start);
@@ -262,10 +329,10 @@ namespace rrt_planner {
         position[0] = plan[i].pose.position.x;
         position[1] = plan[i].pose.position.y;
         double distance = computeDistance(position, world_goal);
-        printf("Position %d: (%f, %f)\n", i, position[0], position[1]);
-        printf("distance: %f\n", distance);
-        printf("distance_start_to_goal: %f\n", distance_start_to_goal);
-        printf("closesDistance: %f\n", closestDistance);
+        //printf("Position %d: (%f, %f)\n", i, position[0], position[1]);
+        //printf("distance: %f\n", distance);
+        //printf("distance_start_to_goal: %f\n", distance_start_to_goal);
+        //printf("closesDistance: %f\n", closestDistance);
         if (distance >= distance_start_to_goal) {
           continue;
         } 
@@ -279,15 +346,20 @@ namespace rrt_planner {
         revised_plan.push_back(plan[i]);
       }
 
+      
       for (int i = 0; i < revised_plan.size(); ++i) {
         position[0] = revised_plan[i].pose.position.x;
         position[1] = revised_plan[i].pose.position.y;
         ROS_INFO("revised_plan[%d]: (%f, %f)", i, revised_plan[i].pose.position.x, revised_plan[i].pose.position.y);
         ROS_INFO("distance: %f", computeDistance(position, world_goal));
       }
+      
+      
 
       publishPlan(revised_plan);
-    }
+    }  
+    */
+    
   
     /* 
     for (int i = 0; i < plan.size(); ++i) {
@@ -320,6 +392,10 @@ namespace rrt_planner {
       gui_path.poses[i] = path[i];
     }
     
+    //for (int i = 0; i < gui_path.poses.size(); ++i) {
+      //ROS_INFO("gui_path[%d]: (%f, %f)", i, gui_path.poses[i].pose.position.x, gui_path.poses[i].pose.position.y);
+    //}
+
     plan_pub_.publish(gui_path);
   }
 

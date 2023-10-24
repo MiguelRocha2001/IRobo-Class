@@ -41,6 +41,7 @@ namespace rrt_planner {
 
         double *p_rand, *p_new;
         Node nearest_node;
+        int new_id;
 
         for (unsigned int k = 1; k <= params_.max_num_nodes; k++) {
 
@@ -52,7 +53,7 @@ namespace rrt_planner {
             //ROS_INFO("Tree extended");
 
             if (!collision_dect_.obstacleBetween(nearest_node.pos, p_new)) {
-                createNewNode(p_new, nearest_node.node_id);
+                new_id = createNewNode(p_new, nearest_node.node_id);
                 //ROS_INFO("New node created");
             } else {
                 //ROS_INFO("Obstacle between");
@@ -64,10 +65,22 @@ namespace rrt_planner {
             //ROS_WARN("best pos: %f, %f", p_new[0], p_new[1]);
             if (dist < best_cost_) {
                 best_cost_ = dist;
-                best_node_id_ = nearest_node.node_id + 1;
+                best_node_id_ = new_id;
                 best_pos_[0] = p_new[0];
                 best_pos_[1] = p_new[1];
                 newBestNodeFound_ = 1;
+                /* 
+                */
+                if (best_cost_ < params_.goal_tolerance) {
+
+                    printf("dist: %f\n", dist);
+                    printf("best_cost_: %f\n", best_cost_);
+                    printf("computed distance %f\n", computeDistance(p_new, goal_));
+                    printf("id: %d\n", best_node_id_);
+                    printf("new_id %d\n", new_id);
+                    printf("goal tolerance %f reached\n", params_.goal_tolerance);
+                    return true;
+                }
                 //ROS_WARN("best_cost: %f", best_cost_);
                 //ROS_WARN("best pos: %f, %f", p_new[0], p_new[1]);
                 //ROS_WARN("best_node_id_: %d", best_node_id_);
@@ -75,7 +88,10 @@ namespace rrt_planner {
 
             if(k > params_.min_num_nodes) {
                 
-                if(computeDistance(p_new, goal_) <= params_.goal_tolerance){
+                if(computeDistance(p_new, goal_) <= params_.goal_tolerance) {
+                    printf("best cost %f\n", best_cost_);
+                    printf("computed distance %f\n", computeDistance(p_new, goal_));
+                    printf("goal tolerance %f reached\n", params_.goal_tolerance);
                     return true;
                 }
             }
@@ -110,11 +126,11 @@ namespace rrt_planner {
     }
 
     // IMPLEMENTED THIS
-    void RRTPlanner::createNewNode(const double* pos, int parent_node_id) {
+    int RRTPlanner::createNewNode(const double* pos, int parent_node_id) {
 
         Node new_node;
 
-        new_node.node_id = parent_node_id + 1; // if node_id = -1, then node_id = 0
+        new_node.node_id = nodes_.size(); // if node_id = -1, then node_id = 0
         new_node.pos[0] = pos[0];
         new_node.pos[1] = pos[1];
         new_node.parent_id = parent_node_id;
@@ -122,21 +138,35 @@ namespace rrt_planner {
         //ROS_INFO("New node created at: %f, %f", new_node.pos[0], new_node.pos[1]);
 
         nodes_.emplace_back(new_node);
+
+        return new_node.node_id;
     }
 
     // IMPLEMENTED THIS
     double* RRTPlanner::sampleRandomPoint() {
         double bias = 0.2;
+        double random_for_bias = ((double) rand() / (RAND_MAX));
+        
+        double close_to_goal = 0.5;
 
-        double r = ((double) rand() / (RAND_MAX));
-
-        if (r < bias) {
+        
+        if (random_for_bias < bias) {
             rand_point_[0] = goal_[0];
             rand_point_[1] = goal_[1];
             return rand_point_;
         }
+        else if (random_for_bias < close_to_goal) {
+            random_double_x.setRange(start_[0], goal_[0]);
+            random_double_y.setRange(start_[1], goal_[1]);
+
+            rand_point_[0] = goal_[0] + random_double_x.generate();
+            rand_point_[1] = goal_[1] + random_double_y.generate();
+        }
         else {
             do {
+                random_double_x.setRange(-map_width_, map_width_);
+                random_double_y.setRange(-map_height_, map_height_);
+
                 rand_point_[0] = random_double_x.generate();
                 rand_point_[1] = random_double_y.generate();
 
@@ -144,6 +174,7 @@ namespace rrt_planner {
                 //ROS_WARN("rand_point_[1]: %f", rand_point_[1]);
             } while(collision_dect_.inFreeSpace(rand_point_));
         }
+        
 
         return rand_point_;
     }
@@ -196,6 +227,10 @@ namespace rrt_planner {
 
     double RRTPlanner::getBestCost() {
         return best_cost_;
+    }
+
+    void RRTPlanner::setBestCost(double cost) {
+        best_cost_ = cost;
     }
 
     double* RRTPlanner::getBestNodePos() {
