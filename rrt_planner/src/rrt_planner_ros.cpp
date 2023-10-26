@@ -2,6 +2,10 @@
 #include <rrt_planner/rrt_planner_ros.h>
 #include <pluginlib/class_list_macros.h>
 #include <algorithm>
+#include <chrono>
+#include <iostream>
+
+using namespace std::chrono;
 
 // register this planner as a BaseGlobalPlanner plugin
 PLUGINLIB_EXPORT_CLASS(rrt_planner::RRTPlannerROS, nav_core::BaseGlobalPlanner)
@@ -145,6 +149,9 @@ namespace rrt_planner {
       
       planner_->setBestCost(computeDistance(world_start, world_goal));
 
+      // start timer
+      auto timer_start = high_resolution_clock::now();
+
       do {
         if(planner_->planPath() ) {
           ROS_INFO("[RRTPlanner] Found a path.");
@@ -152,16 +159,16 @@ namespace rrt_planner {
           double* best_node_pos = planner_->getBestNodePos();
           double best_node_pos_x = best_node_pos[0];
           double best_node_pos_y = best_node_pos[1];
-          printf("best_node_pos_x: %f\n", best_node_pos_x);
-          printf("best_node_pos_y: %f\n", best_node_pos_y);
+          //printf("best_node_pos_x: %f\n", best_node_pos_x);
+          //printf("best_node_pos_y: %f\n", best_node_pos_y);
           int best_node_id = planner_->getBestNodeId();
-          printf("best node id: %d\n", best_node_id);
+          //printf("best node id: %d\n", best_node_id);
           double best_node[2];
           //best_node[0] = rrt_tree_[best_node_id].pos[0];
           //best_node[1] = rrt_tree_[best_node_id].pos[1];
           //printf("best_node[0]: %f\n", best_node[0]);
           //printf("best_node[1]: %f\n", best_node[1]);
-          printf("distance best pos to goal: %f\n", computeDistance(best_node_pos, world_goal));
+          //printf("distance best pos to goal: %f\n", computeDistance(best_node_pos, world_goal));
 
 
           followPath(start, goal, plan, 1);
@@ -170,15 +177,26 @@ namespace rrt_planner {
 
           //planner_->restoreObstacleCost();
 
+          auto timer_stop = high_resolution_clock::now();
+
+          auto duration = duration_cast<microseconds>(timer_stop - timer_start) / 1000;
+
+          ROS_WARN("Total distance till now %f\n", current_distance_);
+
+          if (generated_first_path == 0)
+            std::cout << "Total duration: " << duration.count() << std::endl;
+
+          generated_first_path = 1;
+
           return true;
 
         } else {
-          ROS_WARN("[RRTPlanner] Failed to find a path.");
+          //ROS_WARN("[RRTPlanner] Failed to find a path.");
 
           if (planner_->newBestNodeFound() == 0)
           {
-            printf("Cannot find a best node!!!");
-            printf("best_cost_: %f\n", planner_->getBestCost());
+            //printf("Cannot find a best node!!!");
+            //printf("best_cost_: %f\n", planner_->getBestCost());
             planner_->setBestCost(10);
             //printf("distnace strat to goal: %f\n", computeDistance(world_start, world_goal));
             if (computeDistance(world_start, world_goal) < params_.goal_tolerance) {
@@ -207,10 +225,12 @@ namespace rrt_planner {
           //return false;
         }
       } while (true);
-    
   }
 
 
+  /**
+   * @returns the global planner total distance.
+  */
   void RRTPlannerROS::followPath(const geometry_msgs::PoseStamped& start, 
                                     const geometry_msgs::PoseStamped& goal,
                                     std::vector<geometry_msgs::PoseStamped>& plan,
@@ -348,7 +368,7 @@ namespace rrt_planner {
       
       */
 
-      publishPlan(clean_path);
+      publishPlan(clean_path); // returns the global planner (published) distance
     }
 
 
@@ -405,6 +425,9 @@ namespace rrt_planner {
     */
   }
 
+  /**
+   * @returns the global planner total distance.
+  */
   void RRTPlannerROS::publishPlan(const std::vector<geometry_msgs::PoseStamped>& path) {
 
     if(!initialized_){
@@ -432,6 +455,28 @@ namespace rrt_planner {
     //for (int i = 0; i < gui_path.poses.size(); ++i) {
       //ROS_INFO("gui_path[%d]: (%f, %f)", i, gui_path.poses[i].pose.position.x, gui_path.poses[i].pose.position.y);
     //}
+
+
+    printf("SIZE: %zu\n", path.size());
+    if (path.size() > 1) {
+      for(unsigned int i = 0; i < path.size() - 1; i++) {
+        double startPos[2] = {path[i].pose.position.x, path[i].pose.position.y};
+        double endPos[2] = {path[i+1].pose.position.x, path[i+1].pose.position.y};
+
+        /*
+        printf("Start Pos x: %f\n", path[i].pose.position.x);
+        printf("Start Pos y: %f\n", path[i].pose.position.y);
+        printf("End Pos x: %f\n", path[i+1].pose.position.x);
+        printf("End Pos y: %f\n", path[i+1].pose.position.y);
+        */
+
+        current_distance_ += computeDistance(startPos, endPos);
+        //printf("Distance calculated: %f\n", distance);
+      }
+    } else {
+      printf("There is only one position! Cannot compute distance");
+    }
+    
 
     plan_pub_.publish(gui_path);
   }

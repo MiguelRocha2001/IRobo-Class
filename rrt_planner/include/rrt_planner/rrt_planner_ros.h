@@ -74,7 +74,8 @@ namespace rrt_planner {
                                     std::vector<geometry_msgs::PoseStamped>& plan,
                                     int x);
 
-            void publishPlan(const std::vector<geometry_msgs::PoseStamped>& path);            
+            void 
+            publishPlan(const std::vector<geometry_msgs::PoseStamped>& path);            
 
             ~RRTPlannerROS() {};
 
@@ -101,6 +102,12 @@ namespace rrt_planner {
             tf2::Quaternion quat_tf_;
             geometry_msgs::Quaternion quat_msg_;
             geometry_msgs::PoseStamped pose_stamped_;
+
+            // total path calculation
+            double current_distance_;
+
+            // time track
+            int generated_first_path = 0;
 
     };
 
